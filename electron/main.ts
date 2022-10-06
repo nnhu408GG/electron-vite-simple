@@ -1,17 +1,25 @@
-/**
- * @type {import('electron')}
- */
-const { app, BrowserWindow } = require("electron")
+import { app, BrowserWindow } from "electron"
+import WinState from "electron-win-state"
+import * as path from "path"
+import * as dotenv from "dotenv"
 
-/**
- * @type {import('electron-win-state')}
- */
-const WinState = require("electron-win-state").default
+const NODE_ENV_DEVELOPMENT = "development"
+const NODE_ENV_PRODUCTRON = "production"
 
-/** 
- * @type {import('path')} 
- * */
-const path = require("path")
+// const NODE_ENV = process.env?.NODE_ENV === NODE_ENV_DEVELOPMENT ? NODE_ENV_DEVELOPMENT : NODE_ENV_PRODUCTRON
+
+let NODE_ENV = NODE_ENV_PRODUCTRON
+
+if (process.env?.NODE_ENV === NODE_ENV_DEVELOPMENT) {
+    NODE_ENV = NODE_ENV_DEVELOPMENT
+}
+
+console.log("NODE_ENV:", NODE_ENV);
+
+if (NODE_ENV === NODE_ENV_DEVELOPMENT) dotenv.config({ path: ".env.development" });
+if (NODE_ENV === NODE_ENV_PRODUCTRON) dotenv.config({ path: ".env.production" });
+
+const __DEV__ = NODE_ENV === NODE_ENV_DEVELOPMENT ? true : false
 
 function createWindow() {
     const winstate = new WinState({
@@ -22,16 +30,19 @@ function createWindow() {
     const win = new BrowserWindow({
         ...winstate.winOptions,
         webPreferences: {
-            preload: path.resolve(__dirname, "./preload/index.ts")
+            // preload: path.resolve(__dirname, "./preload/index")
+            preload: "./preload"
         }
     })
 
     winstate.manage(win)
 
-    win.loadURL("http://localhost:5173/")
+    win.loadURL(__DEV__ ? "http://localhost:5173/" : `file://${path.join(__dirname, '../index.html')}`)
 
     /* 启动时打开 开发者工具 */
-    win.webContents.openDevTools({ mode: "detach", activate: false });
+    if (__DEV__) {
+        win.webContents.openDevTools({ mode: "detach", activate: false });
+    }
 
     win.once("ready-to-show", () => {
         win.show();

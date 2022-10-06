@@ -2,6 +2,29 @@
 
 简易配置
 
+## 热更新模块的核心
+
+- transpileModule.js
+
+```js
+// "main": "./electron/main.ts",
+const path = require("path");
+const ts = require("typescript");
+const fs = require("fs");
+
+/* 载入package.json配置中的main，该mian记录入口文件：main.ts */
+const { electronMain } = require("./package.json");
+/* 载入typescript.json配置 */
+const compilerOptions = require("./electron/tsconfig.json");
+
+/* 读取main指定路径的文件 main.ts 源文件 */
+const content = fs.readFileSync(path.resolve(__dirname, electronMain), "utf-8");
+/* 将ts编译成js源文件 */
+const { outputText } = ts.transpileModule(content, { compilerOptions });
+/* todo 这里还不太懂 */
+module._compile(outputText, path.resolve(__dirname, electronMain));
+```
+
 ## 主要变动
 
 - index.html
@@ -10,26 +33,9 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'">
 ```
 
-- /electron/main.ts require引用的ts提示
-
-```ts
-/**
- * @type {import('electron')}
- */
-const { app, BrowserWindow } = require("electron")
-
-/**
- * @type {import('electron-win-state')}
- */
-const WinState = require("electron-win-state").default
-
-/** 
- * @type {import('path')} 
- * */
-const path = require("path")
-```
-
 - /electron/tsconfig.json
+
+> 注意要严格的json格式，特别是最后不要多加逗号！😭
 
 ```json
 {
@@ -49,7 +55,7 @@ const path = require("path")
     "noEmit": false,
     "outDir": "../dist/electron"
   },
-  "include": ["./"],
+  "include": ["./"]
 }
 ```
 
@@ -57,17 +63,27 @@ const path = require("path")
 
 ```json
 {
-  "type": "commonjs",
-  "main": "electron/main.ts",
+  "electronMain": "./electron/main.ts",   // electron的入口文件（在这里开发）
+  "main": "./dist/electron/main.js",      // 打包后的目标入口文件
   "scripts": {
-    "build": "vite build && tsc -p ./electron && electron-builder",
-    "reload": "electron .",
-    "nodemon": "nodemon --exec electron . --watch ./electron --ext .ts"
+    "dev": "vite & npm run nodemon",
+    "nodemon": "export NODE_ENV='development' && nodemon --exec electron transpileModule.js --watch ./electron --ext .ts",
+    "build": "vite build && tsc -p ./electron && electron-builder"
   },
-  "devDependencies": {
-    "electron": "^21.0.1",
-    "electron-builder": "^23.3.3",
-    "nodemon": "^2.0.20",
-  }
+  "build": {
+    "files": [
+      "./dist/**/*"
+    ],
+    "extends": null
+  },
 }
+```
+
+- vite.config.ts
+
+```js
+export default defineConfig({
+  base: "./",
+  plugins: [vue()],
+})
 ```

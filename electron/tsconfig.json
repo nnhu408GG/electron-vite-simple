@@ -15,5 +15,5 @@
     "noEmit": false,
     "outDir": "../dist/electron"
   },
-  "include": ["./"],
+  "include": ["./"]
 }

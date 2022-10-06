@@ -2,18 +2,23 @@
   "name": "my-electron-vite-vue3",
   "private": true,
   "version": "0.0.0",
-  "type": "commonjs",
-  "main": "electron/main.ts",
+  "electronMain": "./electron/main.ts",
+  "main": "./dist/electron/main.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build && tsc -p ./electron && electron-builder",
-    "preview": "vite preview",
-    "reload": "electron .",
-    "nodemon": "nodemon --exec electron . --watch ./electron --ext .ts"
+    "dev": "vite & npm run nodemon",
+    "nodemon": "export NODE_ENV='development' && nodemon --exec electron transpileModule.js --watch ./electron --ext .ts",
+    "build": "vite build && tsc -p ./electron && electron-builder"
+  },
+  "build": {
+    "files": [
+      "./dist/**/*"
+    ],
+    "extends": null
   },
   "dependencies": {
     "@types/node": "^18.8.2",
     "axios": "^1.0.0",
+    "dotenv": "^16.0.3",
     "electron-win-state": "^1.1.22",
     "less": "^4.1.3",
     "vue": "^3.2.37"
