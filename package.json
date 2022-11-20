@@ -1,19 +1,29 @@
 {
   "name": "my-electron-vite-vue3",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "electronMain": "./electron/main.ts",
   "main": "./dist/electron/main.js",
   "scripts": {
     "dev": "vite & npm run nodemon",
     "nodemon": "export NODE_ENV='development' && nodemon --exec electron transpileModule.js --watch ./electron --ext .ts",
-    "build": "vite build && tsc -p ./electron && electron-builder"
+    "build": "vite build && tsc -p ./electron && electron-builder -m"
   },
   "build": {
+    "productName": "electronViteSimple-beta.1",
+    "appId": "electronViteSimple.beta",
     "files": [
       "./dist/**/*"
     ],
-    "extends": null
+    "directories": {
+      "output": "out"
+    },
+    "mac": {
+      "artifactName": "${productName}-${os}-${version}-${arch}.${ext}",
+      "target": [
+        "dmg"
+      ]
+    }
   },
   "dependencies": {
     "@types/node": "^18.8.2",
